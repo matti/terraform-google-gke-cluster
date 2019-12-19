@@ -1,4 +1,11 @@
 resource "random_uuid" "google_container_cluster" {}
+data "google_compute_zones" "available" {
+  region = var.location
+}
+
+locals {
+  node_locations = var.node_locations == null ? [] : var.node_locations
+}
 
 resource "google_container_cluster" "default" {
   provider = "google-beta"
@@ -9,8 +16,8 @@ resource "google_container_cluster" "default" {
 
   // zone
   // region
-  // node_locations
-  // additional_zones
+
+  node_locations = length(local.node_locations) == 0 ? data.google_compute_zones.available.names : var.node_locations
 
   // addons_config {
   //   horizontal_pod_autoscaling
@@ -111,16 +118,16 @@ resource "google_container_cluster" "default" {
     for_each = var.private_nodes == true ? list(var.master_ipv4_cidr_block) : []
 
     content {
-      // enable_private_endpoint
-      enable_private_nodes   = true
-      master_ipv4_cidr_block = private_cluster_config.value
+      enable_private_endpoint = false
+      enable_private_nodes    = true
+      master_ipv4_cidr_block  = private_cluster_config.value
     }
   }
 
   // project
 
   release_channel {
-    channel = "STABLE"
+    channel = "REGULAR"
   }
 
   remove_default_node_pool = true

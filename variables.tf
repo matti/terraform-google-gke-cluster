@@ -6,6 +6,10 @@ variable "name" {
   default = null
 }
 
+variable "node_locations" {
+  default = null
+}
+
 variable "network" {
   default = "default"
 }
